@@ -40,6 +40,7 @@ def get_user_info(bearer_token):
 
         user_info = {
             "username": farcaster_user["username"],
+            "fid": farcaster_user["fid"],
             "display_name": farcaster_user["display_name"],
             "custody_address": farcaster_user["custody_address"],
             "wallet_string": wallet_string,
