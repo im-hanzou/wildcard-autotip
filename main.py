@@ -56,7 +56,7 @@ def get_user_info(bearer_token):
         return user_info
 
     except requests.RequestException as e:
-        print(f"{Fore.RED}Failed to get user information. Error: {str(e)}")
+        print(f"{Fore.RED}Failed to get user information. Token Expired: {str(e)}")
         return None
 
 def display_topics(bearer_token):
@@ -79,7 +79,7 @@ def display_topics(bearer_token):
         return topics
 
     except requests.RequestException as e:
-        print(f"{Fore.RED}Failed to get channels. Error: {str(e)}")
+        print(f"{Fore.RED}Failed to get channels. Token Expired: {str(e)}")
         return None
 
 def get_channel_info(bearer_token, channel_name, tip_amount):
@@ -117,7 +117,7 @@ def get_channel_info(bearer_token, channel_name, tip_amount):
             time.sleep(round(random.uniform(1, 5), 2))
 
     except requests.RequestException as e:
-        print(f"{Fore.RED}Failed to get Casts. Error: {str(e)}")
+        print(f"{Fore.RED}Failed to get Casts. Token Expired: {str(e)}")
 
 def tip_cast(bearer_token, cast_id, fid, amount):
     url = f"https://sys.wildcard.lol/app/tip/cast/{cast_id}/{fid}"
@@ -174,7 +174,7 @@ def get_casts_from_user(bearer_token, username):
             return None, None, None
 
     except requests.RequestException as e:
-        print(f"{Fore.RED}Failed to get casts for user {username}. Error: {str(e)}")
+        print(f"{Fore.RED}Failed to get casts for user {username}. Token Exprired: {str(e)}")
         return None, None, None
 
 def tip_users(bearer_token, usernames, tip_amount):
@@ -184,7 +184,7 @@ def tip_users(bearer_token, usernames, tip_amount):
         if cast_id and fid:
             print(f"{Fore.GREEN}Attempting to tip user {username}...")
             if tip_cast(bearer_token, cast_id, fid, tip_amount):
-                print(f"{Fore.GREEN}Successfully tipped {username} for Cast ID {cast_id}.")
+                print(f"{Fore.GREEN}Successfully tipped {tip_amount} WILD to {username} for Cast ID {cast_id}.")
             else:
                 print(f"{Fore.RED}Failed to tip {username} for Cast ID {cast_id}.")
         else:
