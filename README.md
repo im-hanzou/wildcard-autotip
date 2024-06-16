@@ -9,7 +9,7 @@ Automation Python script for automatically Giving tips to farcasters at event [W
 ## How to run
 - Download or clone this [script](https://github.com/im-hanzou/wildcard-autotip)
 - Install requirements by run `pip install -r requirements.txt`
-- Run scrupt by `python main.py'
+- Run scrupt by `python main.py`
 ### How to get Token Bearer
 ```bash
 F12 at wildcard browser tab > Select Network > Search url name "https://auth.privy.io/api/v1/sessions" > Find Request Headers > Authorization Bearer eyJXXX > Copy ony "eyXXX" value
