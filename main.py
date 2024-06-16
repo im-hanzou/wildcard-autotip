@@ -202,7 +202,7 @@ def main():
 
     print(f"{Fore.YELLOW}\nSelect options:")
     print(f"{Fore.CYAN}1. Tip From Users")
-    print(f"{Fore.CYAN}2. Tip From Trending Channels")
+    print(f"{Fore.CYAN}2. Tip From List Channels")
 
     try:
         option = int(input(f"{Fore.GREEN}Choose option (1 or 2): "))
