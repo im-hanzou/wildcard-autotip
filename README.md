@@ -2,7 +2,7 @@
 Automation Python script for automatically Giving tips to farcasters at event [WildCard](https://app.wildcard.lol)
 - Register: [WildCard](https://app.wildcard.lol)
 - Login using Warpcast / Farcaster
-- Use invite code: SFgP01gjJG3D ( 5 Users Left )
+- Use invite code: <b>SFgP01gjJG3D</b> ( 5 Users Left )
 ## Script requirements
 - Windows: [Python3](https://www.python.org/ftp/python/3.12.4/python-3.12.4-amd64.exe)
 - Linux: `apt-get install python3 python3-pip`
