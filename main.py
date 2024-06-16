@@ -188,7 +188,7 @@ def tip_users(bearer_token, usernames, tip_amount):
         if cast_id and fid:
             print(f"{Fore.GREEN}Attempting to tip user {username}...")
             if tip_cast(bearer_token, cast_id, fid, tip_amount):
-                print(f"{Fore.GREEN}Successfully tipped {username} for Cast ID {cast_id}.")
+                print(f"{Fore.GREEN}Successfully tipped {tip_amount} WILD to {username} for Cast ID {cast_id}.")
             else:
                 print(f"{Fore.RED}Failed to tip {username} for Cast ID {cast_id}.")
         else:
@@ -198,7 +198,7 @@ def main_menu():
     while True:
         print(f"{Fore.YELLOW}\nSelect options:")
         print(f"{Fore.CYAN}1. Tip to User(s)")
-        print(f"{Fore.CYAN}2. Tip to Trending Channels")
+        print(f"{Fore.CYAN}2. Tip to User(s) From Channel List")
         print(f"{Fore.CYAN}3. Exit")
 
         try:
