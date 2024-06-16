@@ -14,6 +14,8 @@ Automation Python script for automatically Giving tips to farcasters at event [W
 ```bash
 F12 at wildcard browser tab > Select Network > Search url name "https://auth.privy.io/api/v1/sessions" > Find Request Headers > Authorization Bearer eyJXXX > Copy ony "eyXXX" value
 ```
-- Insert your token then run as your options
+- Insert your token then run as your option: 
+  * Option 1 : Send tips to other user(s)
+  * Option 2 : Send tips to random people casts on channel
 # Note
 This script is free and only for education purposes! Please do AT YOUR OWN RISK and DON'T SELL THIS CODE!
