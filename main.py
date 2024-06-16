@@ -2,6 +2,7 @@ import requests
 import time
 import random
 from colorama import init, Fore
+import sys
 
 init(autoreset=True)
 
@@ -102,10 +103,10 @@ def get_channel_info(bearer_token, topics, topic_number, tip_amount):
                 tip_success = tip_cast(bearer_token, cast_id, fid, tip_amount)
                 if tip_success:
                     print(f"{Fore.GREEN}Success Tip {tip_amount} WILD to {cast_id}")
+                    time.sleep(round(random.uniform(1, 5), 2))
                 else:
                     print(f"{Fore.RED}Failed Tip to {cast_id}. Your tip Allowance maybe limited.")
-
-                time.sleep(round(random.uniform(1, 5), 2))
+                    sys.exit()  
         else:
             print(f"{Fore.RED}Failed to get Casts. Status code: {response.status_code}")
     
@@ -201,10 +202,10 @@ def get_ranking_casts_info(bearer_token, tip_amount):
                 tip_success = tip_cast(bearer_token, cast_id, fid, tip_amount)
                 if tip_success:
                     print(f"{Fore.GREEN}Success Tip {tip_amount} WILD to {cast_id}")
+                    time.sleep(round(random.uniform(1, 5), 2))
                 else:
                     print(f"{Fore.RED}Failed Tip to {cast_id}. Your tip Allowance maybe limited.")
-
-                time.sleep(round(random.uniform(1, 5), 2))
+                    sys.exit()
         else:
             print(f"{Fore.RED}Failed to get casts. Status code: {response.status_code}")
     
