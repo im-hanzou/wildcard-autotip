@@ -26,8 +26,12 @@ def get_user_info(bearer_token):
 
     try:
         response = requests.get(url, headers=headers)
-        response.raise_for_status() 
+        if response.status_code == 401:
+            print(f"{Fore.RED}Token expired or invalid.")
+            return None
 
+        response.raise_for_status()
+        
         data = response.json()
         farcaster_user = data["farcaster_user"]
         key_info = data["key"]
@@ -49,14 +53,14 @@ def get_user_info(bearer_token):
             "earnings": f"{earnings_24h_all['value']} {earnings_24h_all['currency']}"
         }
 
-        print(f"\n{Fore.YELLOW}User Information:")
+        print(f"\n{Fore.YELLOW}Your Account Information:")
         for key, value in user_info.items():
             print(f"{Fore.CYAN}{key.replace('_', ' ').capitalize()}: {Fore.MAGENTA}{value}")
 
         return user_info
 
     except requests.RequestException as e:
-        print(f"{Fore.RED}Failed to get user information. Token Expired: {str(e)}")
+        print(f"{Fore.RED}Failed to get user information. Error: {str(e)}")
         return None
 
 def display_topics(bearer_token):
@@ -79,7 +83,7 @@ def display_topics(bearer_token):
         return topics
 
     except requests.RequestException as e:
-        print(f"{Fore.RED}Failed to get channels. Token Expired: {str(e)}")
+        print(f"{Fore.RED}Failed to get channels. Error: {str(e)}")
         return None
 
 def get_channel_info(bearer_token, channel_name, tip_amount):
@@ -117,7 +121,7 @@ def get_channel_info(bearer_token, channel_name, tip_amount):
             time.sleep(round(random.uniform(1, 5), 2))
 
     except requests.RequestException as e:
-        print(f"{Fore.RED}Failed to get Casts. Token Expired: {str(e)}")
+        print(f"{Fore.RED}Failed to get Casts. Error: {str(e)}")
 
 def tip_cast(bearer_token, cast_id, fid, amount):
     url = f"https://sys.wildcard.lol/app/tip/cast/{cast_id}/{fid}"
@@ -174,7 +178,7 @@ def get_casts_from_user(bearer_token, username):
             return None, None, None
 
     except requests.RequestException as e:
-        print(f"{Fore.RED}Failed to get casts for user {username}. Token Exprired: {str(e)}")
+        print(f"{Fore.RED}Failed to get casts for user {username}. Error: {str(e)}")
         return None, None, None
 
 def tip_users(bearer_token, usernames, tip_amount):
@@ -184,53 +188,58 @@ def tip_users(bearer_token, usernames, tip_amount):
         if cast_id and fid:
             print(f"{Fore.GREEN}Attempting to tip user {username}...")
             if tip_cast(bearer_token, cast_id, fid, tip_amount):
-                print(f"{Fore.GREEN}Successfully tipped {tip_amount} WILD to {username} for Cast ID {cast_id}.")
+                print(f"{Fore.GREEN}Successfully tipped {username} for Cast ID {cast_id}.")
             else:
                 print(f"{Fore.RED}Failed to tip {username} for Cast ID {cast_id}.")
         else:
             print(f"{Fore.RED}No valid cast found for {username}.")
 
-def main():
-    display_banner()
+def main_menu():
+    while True:
+        print(f"{Fore.YELLOW}\nSelect options:")
+        print(f"{Fore.CYAN}1. Tip to User(s)")
+        print(f"{Fore.CYAN}2. Tip to Trending Channels")
+        print(f"{Fore.CYAN}3. Exit")
 
-    bearer_token = input(f"{Fore.GREEN}Enter Bearer Token: ").strip()
+        try:
+            option = int(input(f"{Fore.GREEN}Choose option (1, 2, or 3): "))
+            if option not in [1, 2, 3]:
+                print(f"{Fore.RED}Invalid option selected. Please try again.")
+                continue
 
-    user_info = get_user_info(bearer_token)
-    if not user_info:
-        print(f"{Fore.RED}Unable to proceed without valid user information.")
-        return
+            if option == 3:
+                print(f"{Fore.CYAN}Exiting. Goodbye!")
+                break
 
-    print(f"{Fore.YELLOW}\nSelect options:")
-    print(f"{Fore.CYAN}1. Tip From Users")
-    print(f"{Fore.CYAN}2. Tip From List Channels")
+            bearer_token = input(f"{Fore.GREEN}Enter Bearer Token: ").strip()
 
-    try:
-        option = int(input(f"{Fore.GREEN}Choose option (1 or 2): "))
-        if option not in [1, 2]:
-            print(f"{Fore.RED}Invalid option selected. Exiting.")
-            return
+            user_info = get_user_info(bearer_token)
+            if not user_info:
+                print(f"{Fore.RED}Unable to proceed without valid user information.")
+                continue
 
-        tip_amount = float(input(f"{Fore.GREEN}Enter tip amount in WILD: ").strip())
-
-        if option == 1:
-            usernames = input(f"{Fore.GREEN}Enter the username(s) (separated by comma | username1, username2, etc): ").strip().split(',')
-            tip_users(bearer_token, usernames, tip_amount)
-        elif option == 2:
-            topics = display_topics(bearer_token)
-            if topics:
-                topic_number = int(input(f"{Fore.GREEN}Enter the channel number to tip: "))
-                if 1 <= topic_number <= len(topics):
-                    channel_name = topics[topic_number - 1]["id"]
-                    get_channel_info(bearer_token, channel_name, tip_amount)
+            if option == 1:
+                usernames = input(f"{Fore.GREEN}\nEnter the target username(s) (separated by comma | username1, username2, etc): ").strip().split(',')
+                tip_amount = float(input(f"{Fore.GREEN}Enter tip amount in WILD: ").strip())
+                tip_users(bearer_token, usernames, tip_amount)
+            elif option == 2:
+                topics = display_topics(bearer_token)
+                if topics:
+                    topic_number = int(input(f"{Fore.GREEN}Enter the target channel number to tip: "))
+                    if 1 <= topic_number <= len(topics):
+                        channel_name = topics[topic_number - 1]["id"]
+                        tip_amount = float(input(f"{Fore.GREEN}Enter tip amount in WILD: ").strip())
+                        get_channel_info(bearer_token, channel_name, tip_amount)
+                    else:
+                        print(f"{Fore.RED}Invalid channel number. Returning to menu.")
                 else:
-                    print(f"{Fore.RED}Invalid channel number. Exiting.")
-            else:
-                print(f"{Fore.RED}No channel available.")
+                    print(f"{Fore.RED}No channels available. Returning to menu.")
 
-    except ValueError:
-        print(f"{Fore.RED}Invalid input. Please enter a valid number.")
-    except Exception as e:
-        print(f"{Fore.RED}Unexpected error: {str(e)}")
+        except ValueError:
+            print(f"{Fore.RED}Invalid input. Please enter a valid number.")
+        except Exception as e:
+            print(f"{Fore.RED}Unexpected error: {str(e)}")
 
 if __name__ == "__main__":
-    main()
+    display_banner()
+    main_menu()
