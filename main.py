@@ -186,7 +186,7 @@ def tip_users(bearer_token, usernames, tip_amount):
         username = username.strip()
         cast_id, fid, _ = get_casts_from_user(bearer_token, username)
         if cast_id and fid:
-            print(f"{Fore.GREEN}Attempting to tip user {username}...")
+            print(f"{Fore.YELLOW}Tipping user {username}...")
             if tip_cast(bearer_token, cast_id, fid, tip_amount):
                 print(f"{Fore.GREEN}Successfully tipped {tip_amount} WILD to {username} for Cast ID {cast_id}.")
             else:
