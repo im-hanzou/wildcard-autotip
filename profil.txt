@@ -1,9 +1,1 @@
-username: wanzaty
-fid: 263926
-display_name: Wanzaty
-custody_address: 0x3835009b15ef739c51f35275d26a76ddc6cbe826
-wallet_string: 0x8A394bD1981CDf69C52215F3530BA9E9492928e9
-points: 100.0 WILD
-tipping_allowance: 0 WILD
-earnings: 300.0 WILD
 
