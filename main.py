@@ -2,6 +2,7 @@ import requests
 import time
 import random
 from colorama import init, Fore
+import os
 
 init(autoreset=True)
 
@@ -17,7 +18,26 @@ def display_banner():
     """
     print(banner)
 
+def get_bearer_tokens():
+    """Reads bearer tokens from bearer.txt file"""
+    try:
+        with open('bearer.txt', 'r') as file:
+            tokens = file.read().splitlines()
+        return tokens
+    except FileNotFoundError:
+        print(f"{Fore.RED}bearer.txt not found. Please create the file with bearer tokens.")
+        return []
+
+def save_profile_data(profile_data):
+    """Saves profile data to profil.txt, overwriting previous data"""
+    with open('profil.txt', 'w') as file:
+        for data in profile_data:
+            for key, value in data.items():
+                file.write(f"{key}: {value}\n")
+            file.write("\n")
+
 def get_user_info(bearer_token):
+    """Fetches user information using the bearer token"""
     url = "https://sys.wildcard.lol/app/my_profile"
     headers = {
         "Authorization": f"Bearer {bearer_token}",
@@ -53,10 +73,6 @@ def get_user_info(bearer_token):
             "earnings": f"{earnings_24h_all['value']} {earnings_24h_all['currency']}"
         }
 
-        print(f"\n{Fore.YELLOW}Your Account Information:")
-        for key, value in user_info.items():
-            print(f"{Fore.CYAN}{key.replace('_', ' ').capitalize()}: {Fore.MAGENTA}{value}")
-
         return user_info
 
     except requests.RequestException as e:
@@ -64,6 +80,7 @@ def get_user_info(bearer_token):
         return None
 
 def display_topics(bearer_token):
+    """Fetches and displays the list of topics available"""
     url = "https://sys.wildcard.lol/app/feed/topics"
     headers = {
         "Authorization": f"Bearer {bearer_token}",
@@ -87,6 +104,7 @@ def display_topics(bearer_token):
         return None
 
 def get_channel_info(bearer_token, channel_name, tip_amount):
+    """Fetches trending casts from a specific channel and tips them"""
     url = f"https://sys.wildcard.lol/app/channel/{channel_name}/cast/trending"
     headers = {
         "Authorization": f"Bearer {bearer_token}",
@@ -124,6 +142,7 @@ def get_channel_info(bearer_token, channel_name, tip_amount):
         print(f"{Fore.RED}Failed to get Casts. Error: {str(e)}")
 
 def tip_cast(bearer_token, cast_id, fid, amount):
+    """Sends a tip to a specific cast"""
     url = f"https://sys.wildcard.lol/app/tip/cast/{cast_id}/{fid}"
     headers = {
         "Authorization": f"Bearer {bearer_token}",
@@ -148,6 +167,7 @@ def tip_cast(bearer_token, cast_id, fid, amount):
         return False
 
 def get_casts_from_user(bearer_token, username):
+    """Fetches the latest cast from a specific user"""
     url = f"https://sys.wildcard.lol/app/casts/{username}"
     headers = {
         "Authorization": f"Bearer {bearer_token}",
@@ -182,6 +202,7 @@ def get_casts_from_user(bearer_token, username):
         return None, None, None
 
 def tip_users(bearer_token, usernames, tip_amount):
+    """Tips multiple users based on their latest cast"""
     for username in usernames:
         username = username.strip()
         cast_id, fid, _ = get_casts_from_user(bearer_token, username)
@@ -194,46 +215,70 @@ def tip_users(bearer_token, usernames, tip_amount):
         else:
             print(f"{Fore.RED}No valid cast found for {username}.")
 
+def update_profile_data():
+    """Updates profile data for all bearer tokens and saves to profil.txt"""
+    bearer_tokens = get_bearer_tokens()
+    if not bearer_tokens:
+        return
+    
+    profile_data = []
+    for token in bearer_tokens:
+        user_info = get_user_info(token)
+        if user_info:
+            profile_data.append(user_info)
+    
+    save_profile_data(profile_data)
+    return profile_data
+
 def main_menu():
+    """Main menu for the script"""
     while True:
         print(f"{Fore.YELLOW}\nSelect options:")
         print(f"{Fore.CYAN}1. Tip to User(s)")
         print(f"{Fore.CYAN}2. Tip to User(s) From Channel List")
-        print(f"{Fore.CYAN}3. Exit")
+        print(f"{Fore.CYAN}3. View and Update Profiles")
+        print(f"{Fore.CYAN}4. Exit")
 
         try:
-            option = int(input(f"{Fore.GREEN}Choose option (1, 2, or 3): "))
-            if option not in [1, 2, 3]:
+            option = int(input(f"{Fore.GREEN}Choose option (1, 2, 3, or 4): "))
+            if option not in [1, 2, 3, 4]:
                 print(f"{Fore.RED}Invalid option selected. Please try again.")
                 continue
 
-            if option == 3:
+            if option == 4:
                 print(f"{Fore.CYAN}Exiting. Goodbye!")
                 break
 
-            bearer_token = input(f"{Fore.GREEN}Enter Bearer Token: ").strip()
-
-            user_info = get_user_info(bearer_token)
-            if not user_info:
-                print(f"{Fore.RED}Unable to proceed without valid user information.")
+            bearer_tokens = get_bearer_tokens()
+            if not bearer_tokens:
                 continue
 
             if option == 1:
                 usernames = input(f"{Fore.GREEN}\nEnter the target username(s) (separated by comma | username1, username2, etc): ").strip().split(',')
                 tip_amount = float(input(f"{Fore.GREEN}Enter tip amount in WILD: ").strip())
-                tip_users(bearer_token, usernames, tip_amount)
+                for token in bearer_tokens:
+                    tip_users(token, usernames, tip_amount)
             elif option == 2:
-                topics = display_topics(bearer_token)
+                topics = display_topics(bearer_tokens[0])  # Use the first token to get topics
                 if topics:
                     topic_number = int(input(f"{Fore.GREEN}Enter the target channel number to tip: "))
                     if 1 <= topic_number <= len(topics):
                         channel_name = topics[topic_number - 1]["id"]
                         tip_amount = float(input(f"{Fore.GREEN}Enter tip amount in WILD: ").strip())
-                        get_channel_info(bearer_token, channel_name, tip_amount)
+                        for token in bearer_tokens:
+                            get_channel_info(token, channel_name, tip_amount)
                     else:
                         print(f"{Fore.RED}Invalid channel number. Returning to menu.")
                 else:
                     print(f"{Fore.RED}No channels available. Returning to menu.")
+            elif option == 3:
+                profile_data = update_profile_data()
+                if profile_data:
+                    print(f"\n{Fore.YELLOW}Updated Profile Information:")
+                    for data in profile_data:
+                        for key, value in data.items():
+                            print(f"{Fore.CYAN}{key.replace('_', ' ').capitalize()}: {Fore.MAGENTA}{value}")
+                        print()
 
         except ValueError:
             print(f"{Fore.RED}Invalid input. Please enter a valid number.")
