@@ -3,6 +3,7 @@ import time
 import random
 from colorama import init, Fore
 import os
+import schedule
 
 init(autoreset=True)
 
@@ -230,6 +231,33 @@ def update_profile_data():
     save_profile_data(profile_data)
     return profile_data
 
+def auto_tip_users(usernames, tip_amount):
+    bearer_tokens = get_bearer_tokens()
+    if not bearer_tokens:
+        return
+
+    for token in bearer_tokens:
+        tip_users(token, usernames, tip_amount)
+
+def auto_tip_channel(channel_name, tip_amount):
+    bearer_tokens = get_bearer_tokens()
+    if not bearer_tokens:
+        return
+
+    for token in bearer_tokens:
+        get_channel_info(token, channel_name, tip_amount)
+
+def schedule_auto_tip(option, usernames=None, channel_name=None, tip_amount=None):
+    """Schedules the auto-tip function to run every 24 hours"""
+    if option == 1:
+        auto_tip_users(usernames, tip_amount)
+        schedule.every(24).hours.do(auto_tip_users, usernames=usernames, tip_amount=tip_amount)
+        print(f"{Fore.CYAN}Auto tipping to users scheduled every 24 hours.")
+    elif option == 2:
+        auto_tip_channel(channel_name, tip_amount)
+        schedule.every(24).hours.do(auto_tip_channel, channel_name=channel_name, tip_amount=tip_amount)
+        print(f"{Fore.CYAN}Auto tipping to channel scheduled every 24 hours.")
+
 def main_menu():
     """Main menu for the script"""
     while True:
@@ -237,15 +265,16 @@ def main_menu():
         print(f"{Fore.CYAN}1. Tip to User(s)")
         print(f"{Fore.CYAN}2. Tip to User(s) From Channel List")
         print(f"{Fore.CYAN}3. View and Update Profiles")
-        print(f"{Fore.CYAN}4. Exit")
+        print(f"{Fore.CYAN}4. Auto Tip Every 24 Hours")
+        print(f"{Fore.CYAN}5. Exit")
 
         try:
-            option = int(input(f"{Fore.GREEN}Choose option (1, 2, 3, or 4): "))
-            if option not in [1, 2, 3, 4]:
+            option = int(input(f"{Fore.GREEN}Choose option (1, 2, 3, 4, or 5): "))
+            if option not in [1, 2, 3, 4, 5]:
                 print(f"{Fore.RED}Invalid option selected. Please try again.")
                 continue
 
-            if option == 4:
+            if option == 5:
                 print(f"{Fore.CYAN}Exiting. Goodbye!")
                 break
 
@@ -279,6 +308,36 @@ def main_menu():
                         for key, value in data.items():
                             print(f"{Fore.CYAN}{key.replace('_', ' ').capitalize()}: {Fore.MAGENTA}{value}")
                         print()
+            elif option == 4:
+                print(f"{Fore.GREEN}Choose auto tip mode:")
+                print(f"{Fore.CYAN}1. Tip to User(s)")
+                print(f"{Fore.CYAN}2. Tip to User(s) From Channel List")
+
+                auto_tip_option = int(input(f"{Fore.GREEN}Choose option (1 or 2): "))
+                if auto_tip_option not in [1, 2]:
+                    print(f"{Fore.RED}Invalid option selected. Please try again.")
+                    continue
+
+                if auto_tip_option == 1:
+                    usernames = input(f"{Fore.GREEN}\nEnter the target username(s) (separated by comma | username1, username2, etc): ").strip().split(',')
+                    tip_amount = float(input(f"{Fore.GREEN}Enter tip amount in WILD: ").strip())
+                    schedule_auto_tip(1, usernames=usernames, tip_amount=tip_amount)
+                elif auto_tip_option == 2:
+                    topics = display_topics(bearer_tokens[0])  # Use the first token to get topics
+                    if topics:
+                        topic_number = int(input(f"{Fore.GREEN}Enter the target channel number to tip: "))
+                        if 1 <= topic_number <= len(topics):
+                            channel_name = topics[topic_number - 1]["id"]
+                            tip_amount = float(input(f"{Fore.GREEN}Enter tip amount in WILD: ").strip())
+                            schedule_auto_tip(2, channel_name=channel_name, tip_amount=tip_amount)
+                        else:
+                            print(f"{Fore.RED}Invalid channel number. Returning to menu.")
+                    else:
+                        print(f"{Fore.RED}No channels available. Returning to menu.")
+
+                while True:
+                    schedule.run_pending()
+                    time.sleep(1)
 
         except ValueError:
             print(f"{Fore.RED}Invalid input. Please enter a valid number.")
